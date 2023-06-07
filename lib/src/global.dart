@@ -69,6 +69,14 @@ Future<OfflineRegion> updateOfflineRegionMetadata(
   return OfflineRegion.fromMap(json.decode(regionJson));
 }
 
+Future<dynamic> setMaximumAmbientCacheSize(int size) =>
+    _globalChannel.invokeMethod(
+      'setMaximumAmbientCacheSize',
+      <String, dynamic>{
+        'size': size,
+      },
+    );
+
 Future<dynamic> setOfflineTileCountLimit(int limit) =>
     _globalChannel.invokeMethod(
       'setOfflineTileCountLimit',

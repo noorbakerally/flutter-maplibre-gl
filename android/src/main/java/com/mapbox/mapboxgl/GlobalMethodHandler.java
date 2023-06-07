@@ -86,6 +86,10 @@ class GlobalMethodHandler implements MethodChannel.MethodCallHandler {
       case "mergeOfflineRegions":
         OfflineManagerUtils.mergeRegions(result, context, methodCall.argument("path"));
         break;
+      case "setMaximumAmbientCacheSize":
+        OfflineManagerUtils.setMaximumAmbientCacheSize(
+                result, context, methodCall.<Number>argument("size").longValue());
+        break;
       case "setOfflineTileCountLimit":
         OfflineManagerUtils.setOfflineTileCountLimit(
             result, context, methodCall.<Number>argument("limit").longValue());

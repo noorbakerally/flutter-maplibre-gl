@@ -2,6 +2,7 @@ package com.mapbox.mapboxgl;
 
 import android.content.Context;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
@@ -43,6 +44,25 @@ abstract class OfflineManagerUtils {
               }
             });
   }
+
+
+    static void setMaximumAmbientCacheSize(MethodChannel.Result result, Context context, long size) {
+        OfflineManager.getInstance(context).setMaximumAmbientCacheSize(
+                size,
+                new OfflineManager.FileSourceCallback() {
+                    @Override
+                    public void onSuccess() {
+                        result.success(null);
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        result.error("MAPBOX CACHE ERROR", message, null);
+                    }
+                }
+        );
+        // result.success(null);
+    }
 
   static void setOfflineTileCountLimit(MethodChannel.Result result, Context context, long limit) {
     OfflineManager.getInstance(context).setOfflineMapboxTileCountLimit(limit);

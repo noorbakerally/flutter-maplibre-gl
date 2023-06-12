@@ -57,6 +57,15 @@ class OfflineManagerUtils {
         result(nil)
     }
 
+    static func setMaximumAmbientCacheSize(result: @escaping FlutterResult, size: UInt) {
+        let offlineStorage = MGLOfflineStorage.shared
+        Task {
+            try await offlineStorage.setMaximumAmbientCacheSize(size)
+        }
+        
+        result(nil)
+    }
+
     static func deleteRegion(result: @escaping FlutterResult, id: Int) {
         let offlineStorage = MGLOfflineStorage.shared
         guard let pacs = offlineStorage.packs else { return }

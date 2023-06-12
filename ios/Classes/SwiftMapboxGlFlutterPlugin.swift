@@ -98,6 +98,18 @@ public class SwiftMapboxGlFlutterPlugin: NSObject, FlutterPlugin {
                     return
                 }
                 OfflineManagerUtils.setOfflineTileCountLimit(result: result, maximumCount: limit)
+            case "setMaximumAmbientCacheSize":
+                guard let arguments = methodCall.arguments as? [String: Any],
+                      let size = arguments["size"] as? UInt
+                else {
+                    result(FlutterError(
+                        code: "SetMaximumAmbientCacheSizeError",
+                        message: "could not decode arguments",
+                        details: nil
+                    ))
+                    return
+                }
+                OfflineManagerUtils.setMaximumAmbientCacheSize(result: result, size: size)
             case "getListOfRegions":
                 // Note: this does not download anything from internet, it only fetches data drom database
                 OfflineManagerUtils.regionsList(result: result)

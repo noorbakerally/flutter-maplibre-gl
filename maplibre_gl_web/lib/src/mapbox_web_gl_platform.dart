@@ -6,7 +6,7 @@ final _maplibreGlCssUrl =
 
 class MaplibreMapController extends MapLibreGlPlatform
     implements MapboxMapOptionsSink {
-  late DivElement _mapElement;
+  late html.DivElement _mapElement;
 
   late Map<String, dynamic> _creationParams;
   late MapboxMap _map;
@@ -48,7 +48,7 @@ class MaplibreMapController extends MapLibreGlPlatform
     // ignore: undefined_prefixed_name
     ui.platformViewRegistry.registerViewFactory(
         'plugins.flutter.io/mapbox_gl_$identifier', (int viewId) {
-      _mapElement = DivElement()
+      _mapElement = html.DivElement()
         ..style.position = 'absolute'
         ..style.top = '0'
         ..style.bottom = '0'
@@ -95,7 +95,7 @@ class MaplibreMapController extends MapLibreGlPlatform
   }
 
   void _initResizeObserver() {
-    final resizeObserver = ResizeObserver((entries, observer) {
+    final resizeObserver = html.ResizeObserver((entries, observer) {
       // The resize observer might be called a lot of times when the user resizes the browser window with the mouse for example.
       // Due to the fact that the resize call is quite expensive it should not be called for every triggered event but only the last one, like "onMoveEnd".
       // But because there is no event type for the end, there is only the option to spawn timers and cancel the previous ones if they get overwritten by a new event.
@@ -104,7 +104,7 @@ class MaplibreMapController extends MapLibreGlPlatform
         _onMapResize();
       });
     });
-    resizeObserver.observe(document.body as Element);
+    resizeObserver.observe(html.document.body as html.Element);
   }
 
   void _loadFromAssets(Event event) async {
@@ -174,8 +174,8 @@ class MaplibreMapController extends MapLibreGlPlatform
     }
   }
 
-  Future<void> _addStylesheetToShadowRoot(HtmlElement e) async {
-    LinkElement link = LinkElement()
+  Future<void> _addStylesheetToShadowRoot(html.HtmlElement e) async {
+    final link = html.LinkElement()
       ..href = _maplibreGlCssUrl
       ..rel = 'stylesheet';
     e.append(link);
@@ -194,7 +194,7 @@ class MaplibreMapController extends MapLibreGlPlatform
   @override
   Future<bool?> animateCamera(CameraUpdate cameraUpdate,
       {Duration? duration}) async {
-    final cameraOptions = Convert.toCameraOptions(cameraUpdate, _map);
+    final cameraOptions = Convert.toCameraOptions(cameraUpdate, _map).jsObject;
 
     final around = getProperty(cameraOptions, 'around');
     final bearing = getProperty(cameraOptions, 'bearing');
@@ -203,9 +203,9 @@ class MaplibreMapController extends MapLibreGlPlatform
     final zoom = getProperty(cameraOptions, 'zoom');
 
     _map.flyTo({
-      if (around.jsObject != null) 'around': around,
+      if (around != null) 'around': around,
       if (bearing != null) 'bearing': bearing,
-      if (center.jsObject != null) 'center': center,
+      if (center != null) 'center': center,
       if (pitch != null) 'pitch': pitch,
       if (zoom != null) 'zoom': zoom,
       if (duration != null) 'duration': duration.inMilliseconds,
@@ -229,16 +229,40 @@ class MaplibreMapController extends MapLibreGlPlatform
 
   @override
   Future<void> matchMapLanguageWithDeviceDefault() async {
+    // Fix in https://github.com/maplibre/flutter-maplibre-gl/issues/263
+    // ignore: deprecated_member_use
     setMapLanguage(ui.window.locale.languageCode);
   }
 
   @override
   Future<void> setMapLanguage(String language) async {
-    _map.setLayoutProperty(
-      'country-label',
-      'text-field',
-      ['get', 'name_' + language],
-    );
+    final layers = _map.getLayers();
+
+    final languageRegex = RegExp("(name:[a-z]+)");
+
+    final symbolLayers = layers.where((layer) => layer.type == "symbol");
+
+    for (final layer in symbolLayers) {
+      final dynamic properties = _map.getLayoutProperty(layer.id, 'text-field');
+
+      if (properties == null) {
+        continue;
+      }
+
+      // We could skip the current iteration, whenever there is not current language.
+      if (!languageRegex.hasMatch(properties.toString())) {
+        continue;
+      }
+
+      final newProperties = [
+        "coalesce",
+        ["get", "name:$language"],
+        ["get", "name:latin"],
+        ["get", "name"],
+      ];
+
+      _map.setLayoutProperty(layer.id, 'text-field', newProperties);
+    }
   }
 
   @override
@@ -680,26 +704,29 @@ class MaplibreMapController extends MapLibreGlPlatform
   }
 
   @override
-  Future<Point> toScreenLocation(LatLng latLng) async {
-    var screenPosition =
-        _map.project(LngLat(latLng.longitude, latLng.latitude));
-    return Point(screenPosition.x.round(), screenPosition.y.round());
+  Future<LatLng> toLatLng(Point<num> screenLocation) async {
+    var lngLat =
+        _map.unproject(geoPoint.Point(screenLocation.x, screenLocation.y));
+    return LatLng(lngLat.lat as double, lngLat.lng as double);
   }
 
   @override
-  Future<List<Point>> toScreenLocationBatch(Iterable<LatLng> latLngs) async {
+  Future<Point> toScreenLocation(LatLng latLng) async {
+    var screenPosition =
+        _map.project(LngLat(latLng.longitude, latLng.latitude));
+    final point = Point(screenPosition.x.round(), screenPosition.y.round());
+
+    return point;
+  }
+
+  @override
+  Future<List<Point<num>>> toScreenLocationBatch(
+      Iterable<LatLng> latLngs) async {
     return latLngs.map((latLng) {
       var screenPosition =
           _map.project(LngLat(latLng.longitude, latLng.latitude));
       return Point(screenPosition.x.round(), screenPosition.y.round());
     }).toList(growable: false);
-  }
-
-  @override
-  Future<LatLng> toLatLng(Point screenLocation) async {
-    var lngLat =
-        _map.unproject(mapbox.Point(screenLocation.x, screenLocation.y));
-    return LatLng(lngLat.lat as double, lngLat.lng as double);
   }
 
   @override
@@ -981,6 +1008,12 @@ class MaplibreMapController extends MapLibreGlPlatform
     throw UnimplementedError();
   }
 
+  Future<void> updateImageSource(
+      String imageSourceId, Uint8List? bytes, LatLngQuad? coordinates) {
+    // TODO: implement updateImageSource
+    throw UnimplementedError();
+  }
+
   @override
   Future<void> addLayer(String imageLayerId, String imageSourceId,
       double? minzoom, double? maxzoom) {
@@ -1043,7 +1076,7 @@ class MaplibreMapController extends MapLibreGlPlatform
 
   @override
   Future<List> getLayerIds() async {
-    throw UnimplementedError();
+    return _map.getLayers().map((e) => e.id).toList();
   }
 
   @override

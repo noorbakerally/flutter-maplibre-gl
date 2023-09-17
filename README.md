@@ -44,7 +44,7 @@ Documentation is available on the docs branch in the doc/api folder and automati
 Please visit [https://github.com/maplibre/maplibre-gl-js](https://github.com/maplibre/maplibre-gl-js) and [https://github.com/maplibre/maplibre-gl-native](https://github.com/maplibre/maplibre-gl-native) for more information about the Maplibre libraries.
 
 ### iOS
-To use this plugin with iOS, you need to add the source repository and 2 additional pods to your Podfile, as shown in the example app: https://github.com/maplibre/flutter-maplibre-gl/blob/main/example/ios/Podfile
+To use this plugin with iOS, you do not need to adapt your app's Podfile anymore! If you previously adapted the Podfile because of the instructions here, this should not be necessary anymore with the latest changes and you should be able to remove these lines from your Podfile: 
 
 ```ruby
 source 'https://cdn.cocoapods.org/'
@@ -53,6 +53,8 @@ source 'https://github.com/m0nac0/flutter-maplibre-podspecs.git'
 pod 'MapLibre'
 pod 'MapLibreAnnotationExtension'
 ```
+
+You can also check our example app's Podfile: https://github.com/maplibre/flutter-maplibre-gl/blob/main/example/ios/Podfile
 
 ### Web
 Include the following JavaScript and CSS files in the `<head>` of the `web/index.html` file.
@@ -149,12 +151,7 @@ buildTypes {
 }
 ```
 
-## Flutter 3.x.x issues
-Since Flutter 3.x.x was introduced, it exposed some race conditions resulting in occasional crashes upon map disposal. The parameter `useDelayedDisposal` was introduced as a workaround for this issue until Flutter and/or Maplibre fix this issue properly. Use with caution.
-
-
-
-### iOS app crashes on startup
+### iOS app crashes when using location based features
 
 Please include the `NSLocationWhenInUseUsageDescription` as described [here](#location-features)
 

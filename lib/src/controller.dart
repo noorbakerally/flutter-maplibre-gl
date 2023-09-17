@@ -1091,8 +1091,8 @@ class MaplibreMapController extends ChangeNotifier {
   /// Not implemented on web.
   Future<void> updateImageSource(
       String imageSourceId, Uint8List? bytes, LatLngQuad? coordinates) {
-    return _mapboxGlPlatform.updateImageSource(
-        imageSourceId, bytes, coordinates);
+    //return _mapboxGlPlatform.updateImageSource(imageSourceId, bytes, coordinates);
+    return Future(() => false);
   }
 
   /// Removes previously added image source by id

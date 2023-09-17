@@ -8,7 +8,7 @@ import 'package:maplibre_gl/mapbox_gl.dart';
 import 'page.dart';
 
 class AnimateCameraPage extends ExamplePage {
-  AnimateCameraPage()
+  const AnimateCameraPage({super.key})
       : super(const Icon(Icons.map), 'Camera control, animated');
 
   @override
@@ -18,7 +18,8 @@ class AnimateCameraPage extends ExamplePage {
 }
 
 class AnimateCamera extends StatefulWidget {
-  const AnimateCamera();
+  const AnimateCamera({super.key});
+
   @override
   State createState() => AnimateCameraState();
 }
@@ -65,8 +66,10 @@ class AnimateCameraState extends State<AnimateCamera> {
                             ),
                           ),
                         )
-                        .then((result) => print(
-                            "mapController.animateCamera() returned $result"));
+                        .then(
+                          (result) => debugPrint(
+                              "mapController.animateCamera() returned $result"),
+                        );
                   },
                   child: const Text('newCameraPosition'),
                 ),
@@ -77,9 +80,9 @@ class AnimateCameraState extends State<AnimateCamera> {
                           CameraUpdate.newLatLng(
                             const LatLng(56.1725505, 10.1850512),
                           ),
-                          duration: Duration(seconds: 5),
+                          duration: const Duration(seconds: 5),
                         )
-                        .then((result) => print(
+                        .then((result) => debugPrint(
                             "mapController.animateCamera() returned $result"));
                   },
                   child: const Text('newLatLng'),
@@ -133,6 +136,15 @@ class AnimateCameraState extends State<AnimateCamera> {
                     );
                   },
                   child: const Text('zoomBy with focus'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    mapController.animateCamera(
+                      CameraUpdate.newLatLngZoom(const LatLng(48, 11), 5),
+                      duration: const Duration(milliseconds: 300),
+                    );
+                  },
+                  child: const Text('latlngZoom'),
                 ),
                 TextButton(
                   onPressed: () {

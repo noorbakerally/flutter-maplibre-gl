@@ -47,7 +47,7 @@ abstract class OfflineManagerUtils {
 
 
     static void setMaximumAmbientCacheSize(MethodChannel.Result result, Context context, long size) {
-        OfflineManager.getInstance(context).setMaximumAmbientCacheSize(
+        OfflineManager.Companion.getInstance(context).setMaximumAmbientCacheSize(
                 size,
                 new OfflineManager.FileSourceCallback() {
                     @Override
